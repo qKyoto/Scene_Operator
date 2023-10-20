@@ -12,7 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9ec19c592df045e094879048acb31d3a, type: 3}
   m_Name: Scene Container 1
   m_EditorClassIdentifier: 
-  _sceneDataElements:
-  - _elementName: asd
+  _sceneGroups:
+  - _groupName: Group 1
     _sceneAssets:
-    - {fileID: 0}
+    - {fileID: 102900000, guid: 5df7a130fdebf94478e5a51db7fc9ed8, type: 3}
+    - {fileID: 102900000, guid: b06bdb6203720514493dcdb6184583cb, type: 3}
+    - {fileID: 102900000, guid: bb7c67ca8c444b84db0f004784bb31b7, type: 3}

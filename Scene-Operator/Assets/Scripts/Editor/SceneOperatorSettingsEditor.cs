@@ -17,7 +17,7 @@ namespace Editor
         public const string SETTINGS_PATH_KEY = "";
     }
     
-    public class EditorSettings : EditorWindow
+    public class SceneOperatorSettingsEditor : EditorWindow
     {
         private const string EDITOR_TITLE = "Settings";
         private const string PATH_KEY = "Path";
@@ -44,6 +44,13 @@ namespace Editor
             DrawCreateNewContainerSection();
             
             
+        }
+
+        public static void OpenEditor()
+        {
+            EditorWindow editorWindow = GetWindow<SceneOperatorSettingsEditor>();
+            //need apply window size
+            editorWindow.titleContent = new GUIContent(EditorConstants.SETTINGS_EDITOR_TITLE);
         }
 
         private void DrawPathField()
@@ -111,11 +118,11 @@ namespace Editor
                 return;
             }
             
-            SceneContainer newContainer = CreateInstance<SceneContainer>();
-            AssetDatabase.CreateAsset(newContainer, "");
+            SceneCollection newCollection = CreateInstance<SceneCollection>();
+            AssetDatabase.CreateAsset(newCollection, "");
             AssetDatabase.SaveAssets();
             EditorUtility.FocusProjectWindow();
-            Selection.activeObject = newContainer;
+            Selection.activeObject = newCollection;
         }
     }
 }
