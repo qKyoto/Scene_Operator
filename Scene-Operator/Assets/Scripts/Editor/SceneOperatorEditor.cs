@@ -3,6 +3,7 @@ using System.Linq;
 using Runtime;
 using UnityEditor;
 using UnityEditor.SceneManagement;
+using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -13,7 +14,7 @@ namespace Editor
         public const string EDITOR_PATH = "Tools/Scene Operator";
         public const string MAIN_EDITOR_TITLE = "Scene Operator";
         public const string SETTINGS_EDITOR_TITLE = "Settings";
-        public const string SO_FILTER = "t:ScriptableObject";
+        public const string SO_FILTER = "t:" + nameof(SceneCollection);
         public const string SAVED_COLLECTION_KEY = "Saved Collection";
         public const string COLLECTIONS_PATH_KEY = "Collection Path";
     } 
@@ -29,6 +30,8 @@ namespace Editor
         
         private DropdownField _dropdownField; //?
         private VisualElement _topPanel; //?
+
+        private SerializedObject _serializedCollection;
         
         [MenuItem(EditorConstants.EDITOR_PATH)]
         public static void ShowEditor()
@@ -39,21 +42,43 @@ namespace Editor
 
         private void OnEnable()
         {
-            _sceneCollections = new List<SceneCollection>();
+            //_sceneCollections = new List<SceneCollection>();
             _sceneLoader = new SceneLoader();
+
+            SceneOperatorSettingsEditor.PathChanged += RedrawEditor;
+            SceneOperatorSettingsEditor.NewCollectionCreated += OnNewCollectionCreated;
             
             LoadSceneCollections();
             TrySelectSavedCollection();
+
+            /*_serializedCollection = new SerializedObject(_selectedCollection);
+            rootVisualElement.TrackSerializedObjectValue(_serializedCollection);*/
         }
 
         private void CreateGUI()
         {
             rootVisualElement.styleSheets.Add(_styleSheet);
             DrawTopPanel();
-            //TrySelectSavedContainer();
             DrawSelectedCollection();
         }
+        
+        private void RedrawEditor()
+        {
+            Debug.Log("redraw editor");
+            rootVisualElement.Clear();
+            //_sceneCollections = new List<SceneCollection>();
+            _selectedCollection = null;
+            LoadSceneCollections();
+            TrySelectSavedCollection(); //?
+            DrawTopPanel();
+        }
 
+        private void OnNewCollectionCreated()
+        {
+            LoadSceneCollections();
+            UpdatedDropdownChoices();
+        }
+        
         private void DrawTopPanel()
         {
             _topPanel = new VisualElement();
@@ -78,12 +103,12 @@ namespace Editor
 
         private void LoadSceneCollections()
         {
-            //string searchPath = "Assets/Resources/Scene Containers";
             string collectionsPath = EditorPrefs.GetString(EditorConstants.COLLECTIONS_PATH_KEY);
             
             if (string.IsNullOrEmpty(collectionsPath))
                 return;
-            
+
+            _sceneCollections = new List<SceneCollection>();
             string[] guids = AssetDatabase.FindAssets(EditorConstants.SO_FILTER, new[] { collectionsPath });
             foreach (string guid in guids)
             {
@@ -95,38 +120,64 @@ namespace Editor
 
         private DropdownField DrawDropDown()
         {
-            _dropdownField = new DropdownField { /*label = DROPDOWN_TITLE*/ };
+            _dropdownField = new DropdownField();
             _dropdownField.AddToClassList("container-dropdown");
-            _dropdownField.RegisterValueChangedCallback(OnSelectedSceneContainerChanger);
+            _dropdownField.RegisterValueChangedCallback(OnSceneCollectionChanged);
            
-            foreach (SceneCollection sceneContainer in _sceneCollections)
-                _dropdownField.choices.Add(sceneContainer.name);
+            foreach (SceneCollection sceneCollection in _sceneCollections)
+                _dropdownField.choices.Add(sceneCollection.name);
 
+            if (_selectedCollection != null)
+                _dropdownField.SetValueWithoutNotify(_selectedCollection.name);
+            
             return _dropdownField;
             //rootVisualElement.Add(_dropdownField);
         }
 
-        private void OnSelectedSceneContainerChanger(ChangeEvent<string> changeEvent) 
+        private void UpdatedDropdownChoices()
+        {
+            _dropdownField.choices.Clear();
+            foreach (SceneCollection sceneCollection in _sceneCollections)
+                _dropdownField.choices.Add(sceneCollection.name);
+        }
+
+        private void OnSceneCollectionChanged(ChangeEvent<string> changeEvent) 
         {
             _activeCollectionView?.Clear();
-            TryChangeActiveContainer();
+            ChangeSelectedCollection();
             DrawSelectedCollection();
         }
 
-        private void TryChangeActiveContainer()
+        private void ChangeSelectedCollection()
         {
             foreach (SceneCollection sceneContainer in _sceneCollections.Where(sceneContainer => sceneContainer.name == _dropdownField.value))
             {
                 _selectedCollection = sceneContainer;
-                EditorPrefs.SetString(EditorConstants.SAVED_COLLECTION_KEY, _selectedCollection.name);
+                EditorPrefs.SetString(EditorConstants.SAVED_COLLECTION_KEY, _selectedCollection.Id);
                 break;
             }
         }
 
         private void TrySelectSavedCollection()
         {
-            //_dropdownField.SetValueWithoutNotify(EditorPrefs.GetString(EditorConstants.SAVED_COLLECTION_KEY));
-            //TryChangeActiveContainer();
+            string collectionId = EditorPrefs.GetString(EditorConstants.SAVED_COLLECTION_KEY);
+
+            if (!IsValidCollection(collectionId))
+            {
+                EditorPrefs.DeleteKey(EditorConstants.SAVED_COLLECTION_KEY);
+                return;
+            }
+            
+            foreach (SceneCollection sceneCollection in _sceneCollections.Where(sceneCollection => sceneCollection.Id == collectionId))
+            {
+                _selectedCollection = sceneCollection;
+                return;
+            }
+        }
+
+        private bool IsValidCollection(string collectionId)
+        {
+            return _sceneCollections.Any(sceneCollection => sceneCollection.Id == collectionId);
         }
         
         //--------------------------
@@ -248,7 +299,8 @@ namespace Editor
         
         private void OnDestroy()
         {
-            
+            SceneOperatorSettingsEditor.PathChanged -= RedrawEditor;
+            SceneOperatorSettingsEditor.NewCollectionCreated -= OnNewCollectionCreated;
         }
     }
 }

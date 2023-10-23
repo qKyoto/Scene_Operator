@@ -1,5 +1,4 @@
 using System;
-using System.Data;
 using Runtime;
 using UnityEditor;
 using UnityEngine;
@@ -7,122 +6,114 @@ using UnityEngine.UIElements;
 
 namespace Editor
 {
-    public static class Constants
-    {
-        public const string EDITOR_SETTINGS_TITLE = "";
-        public const string EDITOR_WINDOW_TITLE = "";
-        public const string SO_FILTER = "t:ScriptableObject";
-        public const string DROPDOWN_TITLE = "Current container";
-        public const string SAVED_CONTAINER_KEY = "Saved Container";
-        public const string SETTINGS_PATH_KEY = "";
-    }
-    
     public class SceneOperatorSettingsEditor : EditorWindow
     {
-        private const string EDITOR_TITLE = "Settings";
-        private const string PATH_KEY = "Path";
-
         [SerializeField] private StyleSheet _styleSheet;
-
-        private TextField _newContainerName;
-        private TextField _sourcePath;
 
         private string Path
         {
-            get => EditorPrefs.GetString(PATH_KEY);
-            set => EditorPrefs.SetString(PATH_KEY, value);
+            get => EditorPrefs.GetString(EditorConstants.COLLECTIONS_PATH_KEY);
+            set => EditorPrefs.SetString(EditorConstants.COLLECTIONS_PATH_KEY, value);
         }
         
         public static event Action PathChanged;
+        public static event Action NewCollectionCreated; 
 
         private void CreateGUI()
         {
-            //_styleSheet = Resources.Load<StyleSheet>("EditorSettingsStyles");
             rootVisualElement.styleSheets.Add(_styleSheet);
             rootVisualElement.AddToClassList("root-container");
+            
             DrawPathField();
-            DrawCreateNewContainerSection();
-            
-            
+            DrawNewCollectionField();
         }
 
         public static void OpenEditor()
         {
             EditorWindow editorWindow = GetWindow<SceneOperatorSettingsEditor>();
-            //need apply window size
             editorWindow.titleContent = new GUIContent(EditorConstants.SETTINGS_EDITOR_TITLE);
+            //need apply window size
         }
 
         private void DrawPathField()
         {
-            VisualElement blockContent = new();
-            blockContent.AddToClassList("visual-block");
-            _sourcePath = new TextField { value = Path, label = "Source path"};
-            _sourcePath.AddToClassList("TextField");
-            _sourcePath.RegisterValueChangedCallback(OnPathChanged);
-
+            VisualElement fieldContent = new();
+            TextField sourcePath = new() { value = Path, label = "Source path"};
             Button choicePathButton = new();
+            
+            fieldContent.AddToClassList("visual-block");
+            sourcePath.AddToClassList("TextField");
             choicePathButton.AddToClassList("select-folder-button");
-            choicePathButton.clicked += TryChoicePath;
 
-            blockContent.Add(_sourcePath);
-            blockContent.Add(choicePathButton);
+            sourcePath.RegisterCallback<KeyDownEvent>(evt =>
+            {
+                if (evt.keyCode == KeyCode.Return) 
+                    OnPathChanged(sourcePath.value);
+            });
+            choicePathButton.clicked += () =>
+            {
+                TryChoicePath(sourcePath);
+            };
+
+            fieldContent.Add(sourcePath);
+            fieldContent.Add(choicePathButton);
+            rootVisualElement.Add(fieldContent);
+        }
+
+        private void DrawNewCollectionField()
+        {
+            VisualElement blockContent = new();
+            Button addNewSceneContainerButton = new() { text = "+" };
+            TextField sceneCollectionName = new() { label = "Container name" };
+            
+            blockContent.AddToClassList("visual-block");
+            addNewSceneContainerButton.AddToClassList("create-container-button");
+            
+            addNewSceneContainerButton.clicked += () => { TryCreateNewSceneCollection(sceneCollectionName.value); };
+            
+            blockContent.Add(sceneCollectionName);
+            blockContent.Add(addNewSceneContainerButton);
             rootVisualElement.Add(blockContent);
         }
 
-        private void TryChoicePath()
+        private void TryChoicePath(TextField field)
         {
             string path = EditorUtility.OpenFolderPanel("Select path", "", "");
             
             if (string.IsNullOrEmpty(path))
                 return;
-
-            _sourcePath.value = path;
+            
+            field.value = path.CutText(Application.productName + "/");
+            OnPathChanged(field.value);
         }
 
-        private void DrawCreateNewContainerSection()
+        private void OnPathChanged(string value)
         {
-            VisualElement blockContent = new();
-            blockContent.AddToClassList("visual-block");
-            
-            _newContainerName = new TextField { label = "Container name" };
-            Button addNewSceneContainerButton = new() { text = "+" };
-            addNewSceneContainerButton.AddToClassList("create-container-button");
-            addNewSceneContainerButton.clicked += TryCreateNewSceneContainer;
-            
-            blockContent.Add(_newContainerName);
-            blockContent.Add(addNewSceneContainerButton);
-            rootVisualElement.Add(blockContent);
-        }
-
-        private void OnPathChanged(ChangeEvent<string> changeEvent)
-        {
+            Path = value;
             PathChanged?.Invoke();
-            Debug.Log(changeEvent.newValue);
-            //save new path
-            //need trigger scene editor for redraw if window opened
-            //EditorPrefs.SetString("");
         }
         
-        private void TryCreateNewSceneContainer()
+        private void TryCreateNewSceneCollection(string collectionName)
         {
-            if (string.IsNullOrEmpty(_newContainerName.value))
+            if (string.IsNullOrEmpty(collectionName))
             {
                 Debug.LogWarning("Name invalid");
                 return;
             }
-            
-            if (!System.IO.Directory.Exists(""))
+            if (!System.IO.Directory.Exists(Path))
             {
                 Debug.LogWarning("Path invalid");
                 return;
             }
             
             SceneCollection newCollection = CreateInstance<SceneCollection>();
-            AssetDatabase.CreateAsset(newCollection, "");
+            newCollection.name = collectionName;
+            AssetDatabase.CreateAsset(newCollection,  Path + "/" + collectionName + ".asset");
             AssetDatabase.SaveAssets();
             EditorUtility.FocusProjectWindow();
             Selection.activeObject = newCollection;
+            
+            NewCollectionCreated?.Invoke();
         }
     }
 }

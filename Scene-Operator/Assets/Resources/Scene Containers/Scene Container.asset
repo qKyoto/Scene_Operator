@@ -12,20 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9ec19c592df045e094879048acb31d3a, type: 3}
   m_Name: Scene Container
   m_EditorClassIdentifier: 
-  _sceneDataElements:
-  - _elementName: Element 1blablanyasadhalsdkhasld
-    _sceneAssets:
-    - {fileID: 102900000, guid: 5df7a130fdebf94478e5a51db7fc9ed8, type: 3}
-    - {fileID: 102900000, guid: b06bdb6203720514493dcdb6184583cb, type: 3}
-  - _elementName: Element 2
-    _sceneAssets:
-    - {fileID: 102900000, guid: bb7c67ca8c444b84db0f004784bb31b7, type: 3}
-    - {fileID: 102900000, guid: 5df7a130fdebf94478e5a51db7fc9ed8, type: 3}
-    - {fileID: 102900000, guid: 99f516dbb1c5bcd4ca97ed9cbcfd2c30, type: 3}
-  - _elementName: Element 3
-    _sceneAssets:
-    - {fileID: 102900000, guid: ed922b61cf700624fbc6c10306cc60e2, type: 3}
-  - _elementName: Element 4
-    _sceneAssets:
-    - {fileID: 102900000, guid: ed922b61cf700624fbc6c10306cc60e2, type: 3}
-    - {fileID: 0}
+  _sceneGroups: []
+  _id: 3fbd4126-b20a-43d8-995c-2f8211ea355d
