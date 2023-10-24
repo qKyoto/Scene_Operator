@@ -17,6 +17,8 @@ namespace Runtime
         public string Id => _id;
         public IEnumerable<SceneGroup> SceneGroups => _sceneGroups;
 
+        public event Action CollectionDestroyed;
+
         private void OnValidate()
         {
             TryCreateId();
@@ -40,7 +42,12 @@ namespace Runtime
         {
             _id = _idDump;
         }
-        
+
+        private void OnDestroy()
+        {
+            CollectionDestroyed?.Invoke();
+        }
+
         //one development
         [ContextMenu("Clear prefs")]
         private void ClearPrefs()

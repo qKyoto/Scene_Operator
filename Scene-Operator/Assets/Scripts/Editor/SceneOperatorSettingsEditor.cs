@@ -17,7 +17,13 @@ namespace Editor
         }
         
         public static event Action PathChanged;
-        public static event Action NewCollectionCreated; 
+        public static event Action NewCollectionCreated;
+
+        public static void OpenEditor()
+        {
+            EditorWindow editorWindow = GetWindow<SceneOperatorSettingsEditor>();
+            editorWindow.titleContent = new GUIContent(EditorConstants.SETTINGS_EDITOR_TITLE);
+        }
 
         private void CreateGUI()
         {
@@ -26,13 +32,6 @@ namespace Editor
             
             DrawPathField();
             DrawNewCollectionField();
-        }
-
-        public static void OpenEditor()
-        {
-            EditorWindow editorWindow = GetWindow<SceneOperatorSettingsEditor>();
-            editorWindow.titleContent = new GUIContent(EditorConstants.SETTINGS_EDITOR_TITLE);
-            //need apply window size
         }
 
         private void DrawPathField()
@@ -69,7 +68,10 @@ namespace Editor
             blockContent.AddToClassList("visual-block");
             addNewSceneContainerButton.AddToClassList("create-container-button");
             
-            addNewSceneContainerButton.clicked += () => { TryCreateNewSceneCollection(sceneCollectionName.value); };
+            addNewSceneContainerButton.clicked += () =>
+            {
+                TryCreateNewSceneCollection(sceneCollectionName.value);
+            };
             
             blockContent.Add(sceneCollectionName);
             blockContent.Add(addNewSceneContainerButton);
@@ -89,6 +91,9 @@ namespace Editor
 
         private void OnPathChanged(string value)
         {
+            if (Path == value)
+                return;
+            
             Path = value;
             PathChanged?.Invoke();
         }

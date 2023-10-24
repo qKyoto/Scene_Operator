@@ -25,13 +25,12 @@ namespace Editor
         
         private List<SceneCollection> _sceneCollections;
         private SceneCollection _selectedCollection;
+        private SerializedObject _serializedCollection;
         private ScrollView _activeCollectionView;
         private SceneLoader _sceneLoader;
         
         private DropdownField _dropdownField; //?
         private VisualElement _topPanel; //?
-
-        private SerializedObject _serializedCollection;
         
         [MenuItem(EditorConstants.EDITOR_PATH)]
         public static void ShowEditor()
@@ -45,14 +44,14 @@ namespace Editor
             //_sceneCollections = new List<SceneCollection>();
             _sceneLoader = new SceneLoader();
 
-            SceneOperatorSettingsEditor.PathChanged += RedrawEditor;
-            SceneOperatorSettingsEditor.NewCollectionCreated += OnNewCollectionCreated;
-            
             LoadSceneCollections();
             TrySelectSavedCollection();
-
-            /*_serializedCollection = new SerializedObject(_selectedCollection);
-            rootVisualElement.TrackSerializedObjectValue(_serializedCollection);*/
+            
+            SceneOperatorSettingsEditor.PathChanged += OnPathChanged;
+            SceneOperatorSettingsEditor.NewCollectionCreated += OnNewCollectionCreated;
+            
+            foreach (SceneCollection sceneCollection in _sceneCollections)
+                sceneCollection.CollectionDestroyed += OnCollectionDestroyed;
         }
 
         private void CreateGUI()
@@ -62,23 +61,43 @@ namespace Editor
             DrawSelectedCollection();
         }
         
-        private void RedrawEditor()
+        //--------event handlers
+        private void OnPathChanged()
         {
-            Debug.Log("redraw editor");
-            rootVisualElement.Clear();
-            //_sceneCollections = new List<SceneCollection>();
-            _selectedCollection = null;
+            /*foreach (SceneCollection sceneCollection in _sceneCollections)
+                sceneCollection.CollectionDestroyed -= OnCollectionDestroyed;*/
+            
+            CleanUpEditor();
             LoadSceneCollections();
-            TrySelectSavedCollection(); //?
             DrawTopPanel();
+            //rootVisualElement.Clear();
+            //_sceneCollections = new List<SceneCollection>();
+            //_selectedCollection = null;
+            //TrySelectSavedCollection(); //?
+            
+            /*foreach (SceneCollection sceneCollection in _sceneCollections)
+                sceneCollection.CollectionDestroyed += OnCollectionDestroyed;*/
         }
 
         private void OnNewCollectionCreated()
         {
-            LoadSceneCollections();
-            UpdatedDropdownChoices();
+            //LoadSceneCollections();
+            //UpdatedDropdownChoices();
         }
+
+        private void OnCollectionDestroyed()
+        {
+            
+        }
+        //--------event handlers
         
+        private void CleanUpEditor()
+        {
+            rootVisualElement.Clear();
+            _selectedCollection = null;
+            //_sceneCollections = new List<SceneCollection>();
+        }
+
         private void DrawTopPanel()
         {
             _topPanel = new VisualElement();
@@ -90,15 +109,10 @@ namespace Editor
 
         private Button DrawSettingsButton()
         {
-            Button settingsButton = new() /*{ text = SETTINGS_TITLE }*/;
+            Button settingsButton = new();
             settingsButton.AddToClassList("settings-button");
-            settingsButton.clicked += OpenSettingsWindow;
+            settingsButton.clicked += SceneOperatorSettingsEditor.OpenEditor;
             return settingsButton;
-        }
-
-        private void OpenSettingsWindow()
-        {
-            SceneOperatorSettingsEditor.OpenEditor();
         }
 
         private void LoadSceneCollections()
@@ -110,6 +124,7 @@ namespace Editor
 
             _sceneCollections = new List<SceneCollection>();
             string[] guids = AssetDatabase.FindAssets(EditorConstants.SO_FILTER, new[] { collectionsPath });
+            
             foreach (string guid in guids)
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid);
@@ -187,6 +202,13 @@ namespace Editor
                 return;
             
             _activeCollectionView = new ScrollView();
+            
+            /*_serializedCollection?.Dispose();
+            _serializedCollection = new SerializedObject(_selectedCollection);
+            _activeCollectionView.TrackSerializedObjectValue(_serializedCollection, o =>
+            {
+                Debug.Log("blablanya");
+            });*/
             
             foreach (SceneGroup sceneGroup in _selectedCollection.SceneGroups)
             {
@@ -286,11 +308,13 @@ namespace Editor
 
         private void RequestToUnloadSingleScene(SceneAsset sceneAsset)
         {
+            EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo();
             _sceneLoader.UnloadSingleScene(sceneAsset.name);
         }
         
         private void RequestToUploadMultipleScenes(SceneGroup sceneGroup)
         {
+            EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo();
             List<string> sceneNames = (from sceneAsset in sceneGroup.SceneAssets where sceneAsset != null select sceneAsset.name).ToList();
             _sceneLoader.UnloadMultipleScenes(sceneNames);
         }
@@ -299,8 +323,11 @@ namespace Editor
         
         private void OnDestroy()
         {
-            SceneOperatorSettingsEditor.PathChanged -= RedrawEditor;
+            SceneOperatorSettingsEditor.PathChanged -= OnPathChanged;
             SceneOperatorSettingsEditor.NewCollectionCreated -= OnNewCollectionCreated;
+            
+            foreach (SceneCollection sceneCollection in _sceneCollections)
+                sceneCollection.CollectionDestroyed -= OnCollectionDestroyed;
         }
     }
 }
