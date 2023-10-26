@@ -5,6 +5,7 @@ using UnityEngine;
 
 namespace Runtime
 {
+    [CreateAssetMenu(fileName = "Scene Collection", menuName = "Scene Operator/Scene Collection", order = 50)]
     public class SceneCollection : ScriptableObject, ISerializationCallbackReceiver
     {
         [SerializeField] private List<SceneGroup> _sceneGroups = new();
@@ -16,8 +17,6 @@ namespace Runtime
 
         public string Id => _id;
         public IEnumerable<SceneGroup> SceneGroups => _sceneGroups;
-
-        public event Action CollectionDestroyed;
 
         private void OnValidate()
         {
@@ -41,11 +40,6 @@ namespace Runtime
         public void OnAfterDeserialize()
         {
             _id = _idDump;
-        }
-
-        private void OnDestroy()
-        {
-            CollectionDestroyed?.Invoke();
         }
 
         //one development

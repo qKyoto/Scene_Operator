@@ -44,9 +44,9 @@ namespace Editor
             sourcePath.AddToClassList("TextField");
             choicePathButton.AddToClassList("select-folder-button");
 
-            sourcePath.RegisterCallback<KeyDownEvent>(evt =>
+            sourcePath.RegisterCallback<KeyDownEvent>(eventData =>
             {
-                if (evt.keyCode == KeyCode.Return) 
+                if (eventData.keyCode == KeyCode.Return) 
                     OnPathChanged(sourcePath.value);
             });
             choicePathButton.clicked += () =>
