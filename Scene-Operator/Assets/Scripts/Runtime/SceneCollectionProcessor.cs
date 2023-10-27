@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using UnityEditor;
+using UnityEngine;
 
 namespace Runtime
 {
@@ -27,10 +28,10 @@ namespace Runtime
         
         private static async void OnWillCreateAsset(string path)
         {
-            if (!path.EndsWith(FILE_ENDING))
-                return;
-
             await WaitAssetDatabase();
+            
+            if (!path.EndsWith(FILE_ENDING) || !CanCheckAsset(GetAssetType(path)))
+                return;
             
             SceneCollection sceneCollection = AssetDatabase.LoadAssetAtPath<SceneCollection>(path);
             CollectionCreated?.Invoke(sceneCollection);

@@ -215,7 +215,8 @@ namespace Editor
 
             Label groupName = new() { text = sceneGroup.GroupName };
             Button toggleContentButton = new() { text = "content" };
-            Button loadGroupButton = new() { text = "Load group" };
+            Button loadGroupAsyncButton = new() { text = "Load group async" };
+            Button loadGroupSingleButton = new() { text = "Load group single" };
             Button unloadGroupButton = new() { text = "Unload group" };
 
             //groupHeader.AddToClassList("");
@@ -226,12 +227,14 @@ namespace Editor
             //unloadGroupButton.AddToClassList("");
 
             toggleContentButton.clicked += () => { ChangeSceneGroupVisibility(groupContent); };
-            loadGroupButton.clicked += () => { RequestToLoadMultipleScenes(sceneGroup); };
+            loadGroupAsyncButton.clicked += () => { RequestToLoadMultipleScenes(sceneGroup, OpenSceneMode.Additive); };
+            loadGroupSingleButton.clicked += () => { RequestToLoadMultipleScenes(sceneGroup, OpenSceneMode.Single); };
             unloadGroupButton.clicked += () => { RequestToUploadMultipleScenes(sceneGroup); };
 
             groupHeader.Add(groupName);
             groupHeader.Add(toggleContentButton);
-            groupHeader.Add(loadGroupButton);
+            groupHeader.Add(loadGroupAsyncButton);
+            groupHeader.Add(loadGroupSingleButton);
             groupHeader.Add(unloadGroupButton);
 
             (VisualElement groupHeader, VisualElement groupContent) result = (groupHeader, groupContent);
@@ -278,10 +281,10 @@ namespace Editor
             _sceneLoader.LoadSingleScene(AssetDatabase.GetAssetPath(sceneAsset), openSceneMode);
         }
 
-        private void RequestToLoadMultipleScenes(SceneGroup sceneGroup)
+        private void RequestToLoadMultipleScenes(SceneGroup sceneGroup, OpenSceneMode openSceneMode)
         {
             List<string> scenePaths = (from sceneAsset in sceneGroup.SceneAssets where sceneAsset != null select AssetDatabase.GetAssetPath(sceneAsset)).ToList();
-            _sceneLoader.LoadMultipleScenes(scenePaths);
+            _sceneLoader.LoadMultipleScenes(scenePaths, openSceneMode);
         }
 
         private void RequestToUnloadSingleScene(SceneAsset sceneAsset)

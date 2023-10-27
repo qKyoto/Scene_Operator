@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Runtime
 {
-    [CreateAssetMenu(fileName = "Scene Collection", menuName = "Scene Operator/Scene Collection", order = 50)]
+    [CreateAssetMenu(fileName = "Scene Collection", menuName = "Scene Operator/Scene Collection")]
     public class SceneCollection : ScriptableObject, ISerializationCallbackReceiver
     {
         [SerializeField] private List<SceneGroup> _sceneGroups = new();

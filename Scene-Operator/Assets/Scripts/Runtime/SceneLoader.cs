@@ -11,8 +11,17 @@ namespace Runtime
             EditorSceneManager.OpenScene(scenePath, openSceneMode);
         }
 
-        public void LoadMultipleScenes(List<string> scenePaths)
+        public void LoadMultipleScenes(List<string> scenePaths, OpenSceneMode openSceneMode = OpenSceneMode.Single)
         {
+            if (scenePaths.Count == 0)
+                return;
+            
+            if (openSceneMode == OpenSceneMode.Single)
+            {
+                LoadSingleScene(scenePaths[0]);
+                scenePaths.RemoveAt(0);
+            }
+            
             foreach (string scenePath in scenePaths)
                 LoadSingleScene(scenePath, OpenSceneMode.Additive);
         }
