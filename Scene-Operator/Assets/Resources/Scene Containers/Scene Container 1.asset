@@ -18,4 +18,8 @@ MonoBehaviour:
     - {fileID: 102900000, guid: 5df7a130fdebf94478e5a51db7fc9ed8, type: 3}
     - {fileID: 102900000, guid: b06bdb6203720514493dcdb6184583cb, type: 3}
     - {fileID: 102900000, guid: bb7c67ca8c444b84db0f004784bb31b7, type: 3}
-  _id: 9463ebe7-5a31-4109-a982-ef32e53c2b02
+  - _groupName: Group 3
+    _sceneAssets:
+    - {fileID: 102900000, guid: 9fc0d4010bbf28b4594072e72b8655ab, type: 3}
+    - {fileID: 102900000, guid: ed922b61cf700624fbc6c10306cc60e2, type: 3}
+  _id: 93576e68-bb55-46ab-a9dc-5d8774f8a717

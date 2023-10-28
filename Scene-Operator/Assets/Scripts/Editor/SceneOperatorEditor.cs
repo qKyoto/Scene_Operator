@@ -31,9 +31,6 @@ namespace Editor
         private ScrollView _activeCollectionView;
         private SceneLoader _sceneLoader;
         
-        private DropdownField _dropdownField; //?
-        private VisualElement _topPanel; //?
-
         private event Action ActiveCollectionViewChanged;
         
         [MenuItem(EditorConstants.EDITOR_PATH)]
@@ -126,52 +123,43 @@ namespace Editor
         private void DrawEditor()
         {
             rootVisualElement.Clear();
-            DrawTopPanel();
+            DrawDropDown();
+            DropHorizontalLine();
             DrawSelectedCollection();
         }
 
-        private void DrawTopPanel()
+        private void DropHorizontalLine()
         {
-            _topPanel = new VisualElement();
-            _topPanel.AddToClassList("top-panel");
-            _topPanel.Add(DrawDropDown());
-            //_topPanel.Add(DrawSettingsButton());
-            rootVisualElement.Add(_topPanel);
+            Box horizontalLine = new();
+            horizontalLine.AddToClassList("horizontal-line");
+            rootVisualElement.Add(horizontalLine);
         }
 
-        private Button DrawSettingsButton()
+        private void DrawDropDown()
         {
-            Button settingsButton = new();
-            settingsButton.AddToClassList("settings-button");
-            settingsButton.clicked += SceneOperatorSettingsEditor.OpenEditor;
-            return settingsButton;
-        }
-
-        private DropdownField DrawDropDown()
-        {
-            _dropdownField = new DropdownField();
-            _dropdownField.AddToClassList("container-dropdown");
-            _dropdownField.RegisterValueChangedCallback(OnSelectedCollectionChanged);
+            DropdownField dropdownField = new();
+            dropdownField.AddToClassList("container-dropdown");
+            dropdownField.RegisterValueChangedCallback(OnSelectedCollectionChanged);
 
             foreach (SceneCollection sceneCollection in _sceneCollections)
-                _dropdownField.choices.Add(sceneCollection.name);
-
-            if (_selectedCollection != null)
-                _dropdownField.SetValueWithoutNotify(_selectedCollection.name);
+                dropdownField.choices.Add(sceneCollection.name);
             
-            return _dropdownField;
+            if (_selectedCollection != null)
+                dropdownField.SetValueWithoutNotify(_selectedCollection.name);
+            
+            rootVisualElement.Add(dropdownField);
         }
         
         private void OnSelectedCollectionChanged(ChangeEvent<string> changeEvent) 
         {
             _activeCollectionView?.Clear();
-            ChangeSelectedCollection();
+            ChangeSelectedCollection(changeEvent.newValue);
             DrawSelectedCollection();
         }
 
-        private void ChangeSelectedCollection()
+        private void ChangeSelectedCollection(string newValue)
         {
-            foreach (SceneCollection sceneContainer in _sceneCollections.Where(sceneContainer => sceneContainer.name == _dropdownField.value))
+            foreach (SceneCollection sceneContainer in _sceneCollections.Where(sceneContainer => sceneContainer.name == newValue))
             {
                 _selectedCollection = sceneContainer;
                 EditorPrefs.SetString(EditorConstants.SAVED_COLLECTION_KEY, _selectedCollection.Id);
@@ -179,13 +167,13 @@ namespace Editor
             }
         }
         
-        //--------------------------
         private void DrawSelectedCollection()
         {
             if (_selectedCollection == null)
                 return;
             
             _activeCollectionView = new ScrollView();
+            _activeCollectionView.AddToClassList("active-collection-view");
             
             foreach (SceneGroup sceneGroup in _selectedCollection.SceneGroups)
             {
@@ -196,7 +184,7 @@ namespace Editor
                     if (sceneAsset == null)
                         continue;
                     
-                    VisualElement sceneContent = CreateSceneContent(sceneAsset);
+                    VisualElement sceneContent = CreateSceneGroupContent(sceneAsset);
                     collectionGroup.groupContent.Add(sceneContent);
                 }
                 
@@ -214,13 +202,15 @@ namespace Editor
             VisualElement groupContent = new();
 
             Label groupName = new() { text = sceneGroup.GroupName };
-            Button toggleContentButton = new() { text = "content" };
-            Button loadGroupAsyncButton = new() { text = "Load group async" };
-            Button loadGroupSingleButton = new() { text = "Load group single" };
-            Button unloadGroupButton = new() { text = "Unload group" };
+            Button toggleContentButton = new() { text = sceneGroup.GroupName/*"Expand"*/ };
+            Button loadGroupAsyncButton = new() { text = "Additive load" };
+            Button loadGroupSingleButton = new() { text = "Single load" };
+            Button unloadGroupButton = new() { text = "Unload" };
 
-            //groupHeader.AddToClassList("");
+            groupHeader.AddToClassList("group-header");
             groupContent.AddToClassList("zero-height");
+            groupContent.AddToClassList("group-content");
+            //groupContent.AddToClassList("scene-collection-content");
             //groupName.AddToClassList("");
             //toggleContentButton.AddToClassList("");
             //loadGroupButton.AddToClassList("");
@@ -231,7 +221,7 @@ namespace Editor
             loadGroupSingleButton.clicked += () => { RequestToLoadMultipleScenes(sceneGroup, OpenSceneMode.Single); };
             unloadGroupButton.clicked += () => { RequestToUploadMultipleScenes(sceneGroup); };
 
-            groupHeader.Add(groupName);
+            //groupHeader.Add(groupName);
             groupHeader.Add(toggleContentButton);
             groupHeader.Add(loadGroupAsyncButton);
             groupHeader.Add(loadGroupSingleButton);
@@ -241,19 +231,19 @@ namespace Editor
             return result;
         }
         
-        private VisualElement CreateSceneContent(SceneAsset sceneAsset)
+        private VisualElement CreateSceneGroupContent(SceneAsset sceneAsset)
         {
             VisualElement sceneContent = new() { style = { flexDirection = new StyleEnum<FlexDirection>(FlexDirection.Row), flexGrow = 1 } };
             Label sceneName = new() { text = sceneAsset.name };
-            Button loadAdditiveButton = new() { text = "Additive" };
-            Button loadSingleButton = new() { text = "Single" };
+            Button loadAdditiveButton = new() { text = "Additive load" };
+            Button loadSingleButton = new() { text = "Single load" };
             Button unloadButton = new() { text = "Unload" };
             
-            /*sceneContent.AddToClassList("");
-            sceneName.AddToClassList("");
+            sceneContent.AddToClassList("");
+            sceneName.AddToClassList("scene-name");
             loadAdditiveButton.AddToClassList("");
             loadSingleButton.AddToClassList("");
-            unloadButton.AddToClassList("");*/
+            unloadButton.AddToClassList("");
 
             loadAdditiveButton.clicked += () => { RequestToLoadSingleScene(sceneAsset, OpenSceneMode.Additive); };
             loadSingleButton.clicked += () => { RequestToLoadSingleScene(sceneAsset, OpenSceneMode.Single); };
@@ -267,13 +257,18 @@ namespace Editor
             return sceneContent;
         }
         
-        //--------------------
         private void ChangeSceneGroupVisibility(VisualElement groupContent)
         {
             if (groupContent.visible)
+            {
+                groupContent.RemoveFromClassList("scene-collection-content");
                 groupContent.AddToClassList("zero-height");
+            }
             else
+            {
+                groupContent.AddToClassList("scene-collection-content");
                 groupContent.RemoveFromClassList("zero-height");
+            }
         }
 
         private void RequestToLoadSingleScene(SceneAsset sceneAsset, OpenSceneMode openSceneMode)
@@ -299,8 +294,6 @@ namespace Editor
             List<string> sceneNames = (from sceneAsset in sceneGroup.SceneAssets where sceneAsset != null select sceneAsset.name).ToList();
             _sceneLoader.UnloadMultipleScenes(sceneNames);
         }
-
-        //--------------------
         
         private void OnDestroy()
         {

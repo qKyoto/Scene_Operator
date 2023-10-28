@@ -1,49 +1,8 @@
-.top-panel {
-    flex-direction: row;
-    align-items: stretch;
-    justify-content: flex-start;
-    align-self: stretch;
-    flex-grow: 0;
-    padding-top: 10px;
-    padding-bottom: 10px;
-}
-
 .container-dropdown {
     flex-direction: row;
     flex-grow: 1;
-}
-
-.settings-button {
-    max-width: 15px;
-    min-width: 15px;
-    min-height: 15px;
-    max-height: 15px;
-    flex-wrap: nowrap;
-    justify-content: flex-start;
-    align-self: center;
-    background-image: url('project://database/Assets/Art/Sprites/icons8-%D0%BD%D0%B0%D1%81%D1%82%D1%80%D0%BE%D0%B9%D0%BA%D0%B8-40.png?fileID=2800000&guid=f390161ba8e98b14181f57ab1f0568f8&type=3#icons8-настройки-40');
-    border-left-color: rgba(255, 255, 255, 0);
-    border-right-color: rgba(255, 255, 255, 0);
-    border-top-color: rgba(255, 255, 255, 0);
-    border-bottom-color: rgba(255, 255, 255, 0);
-    background-color: rgba(255, 255, 255, 0);
-    transition-property: scale, rotate;
-    transition-duration: 0.3s, 0.3s;
-    transition-timing-function: ease-out, ease-out;
-}
-
-.settings-button:hover {
-    transform-origin: center;
-    transition-property: scale, rotate;
-    transition-duration: 0.3s, 0.3s;
-    transition-timing-function: ease-out, ease-out;
-    scale: 1.3 1.3;
-    rotate: 180deg;
-}
-
-.foldout-content {
-    padding-top: 7px;
-    padding-bottom: 7px;
+    max-height: 20px;
+    min-height: 20px;
 }
 
 .zero-height {
@@ -56,4 +15,40 @@
     position: relative;
     visibility: hidden;
     overflow: hidden;
+}
+
+.scene-collection-content {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    margin-left: 5px;
+}
+
+.horizontal-line {
+    background-color: rgb(0, 0, 0);
+    margin-top: 4px;
+    margin-bottom: 4px;
+}
+
+.active-collection-view {
+}
+
+.scene-name {
+    min-width: 93px;
+    max-width: 93px;
+    overflow: hidden;
+    -unity-text-align: middle-left;
+    margin-right: 5px;
+}
+
+.group-header {
+}
+
+.group-content {
+    border-left-color: rgb(80, 125, 227);
+    border-left-width: 1px;
+    padding-left: 2px;
+}
+
+Button {
+    min-width: 100px;
 }
