@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Runtime;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEditor.UIElements;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 
 namespace Editor
@@ -19,7 +21,13 @@ namespace Editor
         public const string SCENE_COLLECTION_PATH = "Assets/";
         public const string SAVED_COLLECTION_KEY = "Saved Collection";
         public const string COLLECTIONS_PATH_KEY = "Collection Path";
-    } 
+        public const int DELAY_AFTER_SCENE_CLOSED = 10;
+    }
+
+    public static class EditorStyles
+    {
+        
+    }
     
     public class SceneOperatorEditor : EditorWindow
     {
@@ -126,6 +134,13 @@ namespace Editor
             DrawDropDown();
             DropHorizontalLine();
             DrawSelectedCollection();
+
+            Label remark = new Label
+            {
+                text = "by Kyoto"
+            };
+            remark.AddToClassList("remark");
+            //rootVisualElement.Add(remark);
         }
 
         private void DropHorizontalLine()
@@ -201,29 +216,31 @@ namespace Editor
             VisualElement groupHeader = new() { style = { flexDirection = new StyleEnum<FlexDirection>(FlexDirection.Row), flexGrow = 1 } };
             VisualElement groupContent = new();
 
-            Label groupName = new() { text = sceneGroup.GroupName };
-            Button toggleContentButton = new() { text = sceneGroup.GroupName/*"Expand"*/ };
-            Button loadGroupAsyncButton = new() { text = "Additive load" };
-            Button loadGroupSingleButton = new() { text = "Single load" };
-            Button unloadGroupButton = new() { text = "Unload" };
+            Button toggleContentButton = new() { text = sceneGroup.GroupName };
+            Button loadGroupAdditiveButton = new() { text = "Group (additive)" };
+            Button loadGroupSingleButton = new() { text = "Group (single)" };
+            Button unloadGroupButton = new();
 
-            groupHeader.AddToClassList("group-header");
+            //groupHeader.AddToClassList("group-header");
             groupContent.AddToClassList("zero-height");
-            groupContent.AddToClassList("group-content");
+            //groupContent.AddToClassList("scene-group-content");
             //groupContent.AddToClassList("scene-collection-content");
             //groupName.AddToClassList("");
             //toggleContentButton.AddToClassList("");
             //loadGroupButton.AddToClassList("");
-            //unloadGroupButton.AddToClassList("");
+            unloadGroupButton.AddToClassList("unload-button");
 
             toggleContentButton.clicked += () => { ChangeSceneGroupVisibility(groupContent); };
-            loadGroupAsyncButton.clicked += () => { RequestToLoadMultipleScenes(sceneGroup, OpenSceneMode.Additive); };
+            loadGroupAdditiveButton.clicked += () => { RequestToLoadMultipleScenes(sceneGroup, OpenSceneMode.Additive); };
             loadGroupSingleButton.clicked += () => { RequestToLoadMultipleScenes(sceneGroup, OpenSceneMode.Single); };
             unloadGroupButton.clicked += () => { RequestToUploadMultipleScenes(sceneGroup); };
+            _sceneLoader.ScenesHasChanged += () => { UpdateStateOfTheGroupButtons(sceneGroup, loadGroupAdditiveButton, loadGroupSingleButton); };
+            
+            UpdateStateOfTheGroupButtons(sceneGroup, loadGroupAdditiveButton, loadGroupSingleButton);
 
             //groupHeader.Add(groupName);
             groupHeader.Add(toggleContentButton);
-            groupHeader.Add(loadGroupAsyncButton);
+            groupHeader.Add(loadGroupAdditiveButton);
             groupHeader.Add(loadGroupSingleButton);
             groupHeader.Add(unloadGroupButton);
 
@@ -235,20 +252,23 @@ namespace Editor
         {
             VisualElement sceneContent = new() { style = { flexDirection = new StyleEnum<FlexDirection>(FlexDirection.Row), flexGrow = 1 } };
             Label sceneName = new() { text = sceneAsset.name };
-            Button loadAdditiveButton = new() { text = "Additive load" };
-            Button loadSingleButton = new() { text = "Single load" };
-            Button unloadButton = new() { text = "Unload" };
+            Button loadAdditiveButton = new() { text = "Scene (additive)" };
+            Button loadSingleButton = new() { text = "Scene (single)" };
+            Button unloadButton = new();
             
             sceneContent.AddToClassList("");
-            sceneName.AddToClassList("scene-name");
+            sceneName.AddToClassList("scene-name-label");
             loadAdditiveButton.AddToClassList("");
             loadSingleButton.AddToClassList("");
-            unloadButton.AddToClassList("");
-
+            unloadButton.AddToClassList("unload-button");
+            
             loadAdditiveButton.clicked += () => { RequestToLoadSingleScene(sceneAsset, OpenSceneMode.Additive); };
             loadSingleButton.clicked += () => { RequestToLoadSingleScene(sceneAsset, OpenSceneMode.Single); };
             unloadButton.clicked += () => { RequestToUnloadSingleScene(sceneAsset); };
-                    
+            _sceneLoader.ScenesHasChanged += () => { UpdateStateSceneButtons(sceneAsset, loadAdditiveButton, loadSingleButton); };
+            
+            UpdateStateSceneButtons(sceneAsset, loadAdditiveButton, loadSingleButton);
+            
             sceneContent.Add(sceneName);
             sceneContent.Add(loadAdditiveButton);
             sceneContent.Add(loadSingleButton);
@@ -269,6 +289,43 @@ namespace Editor
                 groupContent.AddToClassList("scene-collection-content");
                 groupContent.RemoveFromClassList("zero-height");
             }
+        }
+        
+        private void UpdateStateOfTheGroupButtons(SceneGroup sceneGroup, Button loadGroupAdditiveButton, Button loadGroupSingleButton)
+        {
+            bool isAllGroupSceneLoaded = IsAllGroupSceneLoaded(sceneGroup);
+            bool isAllGroupSceneUnloaded = IsAllGroupSceneUnloaded(sceneGroup);
+                
+            loadGroupAdditiveButton.SetEnabled(!isAllGroupSceneLoaded);
+            loadGroupSingleButton.SetEnabled(!isAllGroupSceneLoaded);
+
+            if (!isAllGroupSceneUnloaded && !isAllGroupSceneLoaded)
+            {
+                loadGroupAdditiveButton.AddToClassList("highlight-button");
+                loadGroupSingleButton.AddToClassList("highlight-button");
+            }
+            else
+            {
+                loadGroupAdditiveButton.RemoveFromClassList("highlight-button");
+                loadGroupSingleButton.RemoveFromClassList("highlight-button");
+            }
+        }
+        
+        private void UpdateStateSceneButtons(SceneAsset sceneAsset, Button loadAdditiveButton, Button loadSingleButton)
+        {
+            bool isLoadedScene = _sceneLoader.IsLoadedScene(sceneAsset.name);
+            loadAdditiveButton.SetEnabled(!isLoadedScene);
+            loadSingleButton.SetEnabled(!isLoadedScene);
+        }
+        
+        private bool IsAllGroupSceneLoaded(SceneGroup sceneGroup)
+        {
+            return sceneGroup.SceneAssets.All(sceneAsset => _sceneLoader.IsLoadedScene(sceneAsset.name));
+        }
+
+        private bool IsAllGroupSceneUnloaded(SceneGroup sceneGroup)
+        {
+            return sceneGroup.SceneAssets.All(sceneAsset => !_sceneLoader.IsLoadedScene(sceneAsset.name));
         }
 
         private void RequestToLoadSingleScene(SceneAsset sceneAsset, OpenSceneMode openSceneMode)
@@ -297,6 +354,8 @@ namespace Editor
         
         private void OnDestroy()
         {
+            _sceneLoader.Dispose();
+            
             ActiveCollectionViewChanged -= OnActiveCollectionViewChanged;
             SceneCollectionProcessor.CollectionCreated -= OnCollectionCreated;
             SceneCollectionProcessor.CollectionDestroyed -= OnCollectionDestroyed;
