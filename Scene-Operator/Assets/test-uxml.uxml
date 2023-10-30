@@ -1,7 +1,0 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
-    <Style src="project://database/Assets/Scripts/Styles/EditorWindowStyles.uss?fileID=7433441132597879392&amp;guid=afd0f217d1e276a409944e3f474622d6&amp;type=3#EditorWindowStyles" />
-    <ui:VisualElement name="root" class="root-container" style="flex-grow: 1;">
-        <ui:DropdownField index="-1" choices="System.Collections.Generic.List`1[System.String]" focusable="true" style="background-color: rgb(6, 83, 255);" />
-        <ui:Button text="Button" parse-escape-sequences="true" display-tooltip-when-elided="true" />
-    </ui:VisualElement>
-</ui:UXML>

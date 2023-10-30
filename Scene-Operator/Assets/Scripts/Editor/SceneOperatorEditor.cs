@@ -142,8 +142,11 @@ namespace Editor
         
         private void OnSelectedCollectionChanged(ChangeEvent<string> changeEvent) 
         {
-            _activeCollectionView.Clear();
-            rootVisualElement.Remove(_activeCollectionView);
+            _activeCollectionView?.Clear();
+            
+            if (rootVisualElement.Contains(_activeCollectionView))
+                rootVisualElement.Remove(_activeCollectionView);
+            
             ChangeSelectedCollection(changeEvent.newValue);
             DrawSelectedCollection();
         }
@@ -286,12 +289,12 @@ namespace Editor
         
         private bool IsAllGroupSceneLoaded(SceneGroup sceneGroup)
         {
-            return sceneGroup.SceneAssets.All(sceneAsset => _sceneLoader.IsLoadedScene(sceneAsset.name));
+            return sceneGroup.SceneAssets.All(sceneAsset => _sceneLoader.IsLoadedScene(sceneAsset != null ? sceneAsset.name : null));
         }
 
         private bool IsAllGroupSceneUnloaded(SceneGroup sceneGroup)
         {
-            return sceneGroup.SceneAssets.All(sceneAsset => !_sceneLoader.IsLoadedScene(sceneAsset.name));
+            return sceneGroup.SceneAssets.All(sceneAsset => !_sceneLoader.IsLoadedScene(sceneAsset != null ? sceneAsset.name : null));
         }
 
         private void RequestToLoadSingleScene(SceneAsset sceneAsset, OpenSceneMode openSceneMode)

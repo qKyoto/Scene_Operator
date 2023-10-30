@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9ec19c592df045e094879048acb31d3a, type: 3}
+  m_Name: Scene Collection (Palchin)
+  m_EditorClassIdentifier: 
+  _sceneGroups:
+  - _groupName: Missions
+    _sceneAssets:
+    - {fileID: 102900000, guid: 99f516dbb1c5bcd4ca97ed9cbcfd2c30, type: 3}
+    - {fileID: 102900000, guid: c39fd6345871e4847a83fd64c53fcca1, type: 3}
+    - {fileID: 102900000, guid: c009651d61f668647a5c1848cbeba9dc, type: 3}
+  - _groupName: Environment
+    _sceneAssets:
+    - {fileID: 102900000, guid: f8ce14a536fb2234583114ebb1f78650, type: 3}
+    - {fileID: 102900000, guid: 47409851455a7274782454ea759ccb24, type: 3}
+  _id: e79a481e3aaf2264daed2e216adb8b73
