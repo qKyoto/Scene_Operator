@@ -10,30 +10,6 @@ using UnityEngine.UIElements;
 
 namespace Editor
 {
-    public static class EditorConstants
-    {
-        public const string EDITOR_PATH = "Tools/Scene Operator";
-        public const string MAIN_EDITOR_TITLE = "Scene Operator";
-        public const string SCENE_COLLECTION_FILTER = "t:" + nameof(SceneCollection);
-        public const string SCENE_COLLECTION_PATH = "Assets/";
-        public const string SAVED_COLLECTION_KEY = "Saved Collection";
-    }
-
-    public static class EditorStyles
-    {
-        public const string CONTAINER_DROPDOWN = "container-dropdown";
-        public const string HORIZONTAL_LINE = "horizontal-line";
-        public const string ACTIVE_COLLECTION_VIEW = "active-collection-view";
-        public const string SCENE_COLLECTION_CONTENT = "scene-collection-content";
-        public const string ZERO_HEIGHT = "zero-height";
-        public const string SCENE_NAME_LABEL = "scene-name-label";
-        public const string UNLOAD_BUTTON = "unload-button";
-        public const string HIGHLIGHT_BUTTON = "highlight-button";
-        public const string SIGNATURE = "signature";
-        public const string SIGNATURE_ICON = "signature-icon";
-        public const string SIGNATURE_LABEL = "signature-label";
-    }
-    
     public class SceneOperatorEditor : EditorWindow
     {
         [SerializeField] private StyleSheet _styleSheet;
@@ -46,11 +22,11 @@ namespace Editor
         
         private event Action ActiveCollectionViewChanged;
         
-        [MenuItem(EditorConstants.EDITOR_PATH)]
+        [MenuItem(EditorMainConstants.EDITOR_PATH)]
         public static void ShowEditor()
         {
             EditorWindow editorWindow = GetWindow<SceneOperatorEditor>();
-            editorWindow.titleContent = new GUIContent(EditorConstants.MAIN_EDITOR_TITLE);
+            editorWindow.titleContent = new GUIContent(EditorMainConstants.MAIN_EDITOR_TITLE);
         }
 
         private void OnEnable()
@@ -74,7 +50,7 @@ namespace Editor
 
         private void LoadSceneCollections()
         {
-            string[] guids = AssetDatabase.FindAssets(EditorConstants.SCENE_COLLECTION_FILTER, new[] { EditorConstants.SCENE_COLLECTION_PATH });
+            string[] guids = AssetDatabase.FindAssets(EditorMainConstants.SCENE_COLLECTION_FILTER, new[] { EditorMainConstants.SCENE_COLLECTION_PATH });
             
             foreach (string guid in guids)
             {
@@ -86,11 +62,11 @@ namespace Editor
 
         private void TrySelectSavedCollection()
         {
-            string collectionId = EditorPrefs.GetString(EditorConstants.SAVED_COLLECTION_KEY);
+            string collectionId = EditorPrefs.GetString(EditorMainConstants.SAVED_COLLECTION_KEY);
 
             if (!IsValidCollection(collectionId))
             {
-                EditorPrefs.DeleteKey(EditorConstants.SAVED_COLLECTION_KEY);
+                EditorPrefs.DeleteKey(EditorMainConstants.SAVED_COLLECTION_KEY);
                 return;
             }
             
@@ -177,7 +153,7 @@ namespace Editor
             foreach (SceneCollection sceneContainer in _sceneCollections.Where(sceneContainer => sceneContainer.name == newValue))
             {
                 _selectedCollection = sceneContainer;
-                EditorPrefs.SetString(EditorConstants.SAVED_COLLECTION_KEY, _selectedCollection.Id);
+                EditorPrefs.SetString(EditorMainConstants.SAVED_COLLECTION_KEY, _selectedCollection.Id);
                 break;
             }
         }
@@ -345,9 +321,9 @@ namespace Editor
         private void DrawSignature()
         {
             VisualElement signature = new();
-            Label prefixLabel = new() { text = "by" };
+            Label prefixLabel = new() { text = EditorMainConstants.SIGNATURE_PREFIX_LABEL };
             Image icon = new();
-            Label postfixLabel = new() { text = "Kyoto" };
+            Label postfixLabel = new() { text = EditorMainConstants.SIGNATURE_POSTFIX_LABEL };
             
             signature.AddToClassList(EditorStyles.SIGNATURE);
             prefixLabel.AddToClassList(EditorStyles.SIGNATURE_LABEL);
