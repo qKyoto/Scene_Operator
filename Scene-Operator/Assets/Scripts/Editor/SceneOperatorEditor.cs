@@ -166,7 +166,8 @@ namespace Editor
         
         private void OnSelectedCollectionChanged(ChangeEvent<string> changeEvent) 
         {
-            _activeCollectionView?.Clear();
+            _activeCollectionView.Clear();
+            rootVisualElement.Remove(_activeCollectionView);
             ChangeSelectedCollection(changeEvent.newValue);
             DrawSelectedCollection();
         }
@@ -188,7 +189,7 @@ namespace Editor
             
             _activeCollectionView = new ScrollView();
             _activeCollectionView.AddToClassList(EditorStyles.ACTIVE_COLLECTION_VIEW);
-            
+        
             foreach (SceneGroup sceneGroup in _selectedCollection.SceneGroups)
             {
                 (VisualElement groupHeader, VisualElement groupContent) collectionGroup = CreateCollectionGroup(sceneGroup);

@@ -14,6 +14,7 @@
 .active-collection-view {
     align-self: center;
     transform-origin: top;
+    margin-bottom: 15px;
 }
 
 .scene-collection-content {
@@ -66,7 +67,7 @@ Button:focus {
 }
 
 .unload-button {
-    background-image: url('project://database/Assets/Art/Sprites/icons8-%D1%83%D0%BC%D0%BD%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5-40.png?fileID=2800000&guid=69ed5c4b34318e24eb8aee6932403edf&type=3#icons8-умножение-40');
+    background-image: url('project://database/Assets/Art/Sprites/Sprite_CloseButton.png?fileID=2800000&guid=69ed5c4b34318e24eb8aee6932403edf&type=3#Sprite_CloseButton');
     max-width: 20px;
     min-width: 20px;
 }
@@ -91,7 +92,7 @@ Button:focus {
 }
 
 .signature-icon {
-    background-image: url('project://database/Assets/Art/Sprites/icons8-%D1%81%D0%B0%D0%BA%D1%83%D1%80%D0%B0-48%20(1).png?fileID=2800000&guid=93497e6f259249f4c8322db7bd036ea2&type=3#icons8-сакура-48 (1)');
+    background-image: url('project://database/Assets/Art/Sprites/Sprite_Signature.png?fileID=2800000&guid=93497e6f259249f4c8322db7bd036ea2&type=3#Sprite_Signature');
     background-color: rgba(255, 255, 255, 0);
     min-width: 10px;
     max-width: 10px;
