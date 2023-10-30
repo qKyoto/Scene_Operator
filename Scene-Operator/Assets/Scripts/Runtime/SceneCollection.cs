@@ -13,21 +13,19 @@ namespace Runtime
 
         private string _idDump;
 
-        private bool IsIdEmpty => string.IsNullOrEmpty(_id);
-
         public string Id => _id;
         public IEnumerable<SceneGroup> SceneGroups => _sceneGroups;
 
-        private void OnValidate()
+        private void Awake()
         {
             TryCreateId();
         }
 
         private void TryCreateId()
         {
-            if (!IsIdEmpty)
+            if (!string.IsNullOrEmpty(_id))
                 return;
-            
+
             _id = Guid.NewGuid().ToString();
             EditorUtility.SetDirty(this);
         }
@@ -39,14 +37,10 @@ namespace Runtime
 
         public void OnAfterDeserialize()
         {
+            if (string.IsNullOrEmpty(_idDump))
+                return;
+            
             _id = _idDump;
-        }
-
-        //one development
-        [ContextMenu("Clear prefs")]
-        private void ClearPrefs()
-        {
-            EditorPrefs.DeleteAll();
         }
     }
 }

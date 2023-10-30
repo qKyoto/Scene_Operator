@@ -1,13 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Runtime;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEditor.UIElements;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 
 namespace Editor
@@ -16,17 +14,24 @@ namespace Editor
     {
         public const string EDITOR_PATH = "Tools/Scene Operator";
         public const string MAIN_EDITOR_TITLE = "Scene Operator";
-        public const string SETTINGS_EDITOR_TITLE = "Settings";
         public const string SCENE_COLLECTION_FILTER = "t:" + nameof(SceneCollection);
         public const string SCENE_COLLECTION_PATH = "Assets/";
         public const string SAVED_COLLECTION_KEY = "Saved Collection";
-        public const string COLLECTIONS_PATH_KEY = "Collection Path";
-        public const int DELAY_AFTER_SCENE_CLOSED = 10;
     }
 
     public static class EditorStyles
     {
-        
+        public const string CONTAINER_DROPDOWN = "container-dropdown";
+        public const string HORIZONTAL_LINE = "horizontal-line";
+        public const string ACTIVE_COLLECTION_VIEW = "active-collection-view";
+        public const string SCENE_COLLECTION_CONTENT = "scene-collection-content";
+        public const string ZERO_HEIGHT = "zero-height";
+        public const string SCENE_NAME_LABEL = "scene-name-label";
+        public const string UNLOAD_BUTTON = "unload-button";
+        public const string HIGHLIGHT_BUTTON = "highlight-button";
+        public const string SIGNATURE = "signature";
+        public const string SIGNATURE_ICON = "signature-icon";
+        public const string SIGNATURE_LABEL = "signature-label";
     }
     
     public class SceneOperatorEditor : EditorWindow
@@ -134,26 +139,20 @@ namespace Editor
             DrawDropDown();
             DropHorizontalLine();
             DrawSelectedCollection();
-
-            Label remark = new Label
-            {
-                text = "by Kyoto"
-            };
-            remark.AddToClassList("remark");
-            //rootVisualElement.Add(remark);
+            DrawSignature();
         }
 
         private void DropHorizontalLine()
         {
             Box horizontalLine = new();
-            horizontalLine.AddToClassList("horizontal-line");
+            horizontalLine.AddToClassList(EditorStyles.HORIZONTAL_LINE);
             rootVisualElement.Add(horizontalLine);
         }
-
+        
         private void DrawDropDown()
         {
             DropdownField dropdownField = new();
-            dropdownField.AddToClassList("container-dropdown");
+            dropdownField.AddToClassList(EditorStyles.CONTAINER_DROPDOWN);
             dropdownField.RegisterValueChangedCallback(OnSelectedCollectionChanged);
 
             foreach (SceneCollection sceneCollection in _sceneCollections)
@@ -188,7 +187,7 @@ namespace Editor
                 return;
             
             _activeCollectionView = new ScrollView();
-            _activeCollectionView.AddToClassList("active-collection-view");
+            _activeCollectionView.AddToClassList(EditorStyles.ACTIVE_COLLECTION_VIEW);
             
             foreach (SceneGroup sceneGroup in _selectedCollection.SceneGroups)
             {
@@ -221,14 +220,8 @@ namespace Editor
             Button loadGroupSingleButton = new() { text = "Group (single)" };
             Button unloadGroupButton = new();
 
-            //groupHeader.AddToClassList("group-header");
-            groupContent.AddToClassList("zero-height");
-            //groupContent.AddToClassList("scene-group-content");
-            //groupContent.AddToClassList("scene-collection-content");
-            //groupName.AddToClassList("");
-            //toggleContentButton.AddToClassList("");
-            //loadGroupButton.AddToClassList("");
-            unloadGroupButton.AddToClassList("unload-button");
+            groupContent.AddToClassList(EditorStyles.ZERO_HEIGHT);
+            unloadGroupButton.AddToClassList(EditorStyles.UNLOAD_BUTTON);
 
             toggleContentButton.clicked += () => { ChangeSceneGroupVisibility(groupContent); };
             loadGroupAdditiveButton.clicked += () => { RequestToLoadMultipleScenes(sceneGroup, OpenSceneMode.Additive); };
@@ -238,7 +231,6 @@ namespace Editor
             
             UpdateStateOfTheGroupButtons(sceneGroup, loadGroupAdditiveButton, loadGroupSingleButton);
 
-            //groupHeader.Add(groupName);
             groupHeader.Add(toggleContentButton);
             groupHeader.Add(loadGroupAdditiveButton);
             groupHeader.Add(loadGroupSingleButton);
@@ -256,11 +248,8 @@ namespace Editor
             Button loadSingleButton = new() { text = "Scene (single)" };
             Button unloadButton = new();
             
-            sceneContent.AddToClassList("");
-            sceneName.AddToClassList("scene-name-label");
-            loadAdditiveButton.AddToClassList("");
-            loadSingleButton.AddToClassList("");
-            unloadButton.AddToClassList("unload-button");
+            sceneName.AddToClassList(EditorStyles.SCENE_NAME_LABEL);
+            unloadButton.AddToClassList(EditorStyles.UNLOAD_BUTTON);
             
             loadAdditiveButton.clicked += () => { RequestToLoadSingleScene(sceneAsset, OpenSceneMode.Additive); };
             loadSingleButton.clicked += () => { RequestToLoadSingleScene(sceneAsset, OpenSceneMode.Single); };
@@ -281,13 +270,13 @@ namespace Editor
         {
             if (groupContent.visible)
             {
-                groupContent.RemoveFromClassList("scene-collection-content");
-                groupContent.AddToClassList("zero-height");
+                groupContent.RemoveFromClassList(EditorStyles.SCENE_COLLECTION_CONTENT);
+                groupContent.AddToClassList(EditorStyles.ZERO_HEIGHT);
             }
             else
             {
-                groupContent.AddToClassList("scene-collection-content");
-                groupContent.RemoveFromClassList("zero-height");
+                groupContent.AddToClassList(EditorStyles.SCENE_COLLECTION_CONTENT);
+                groupContent.RemoveFromClassList(EditorStyles.ZERO_HEIGHT);
             }
         }
         
@@ -301,13 +290,13 @@ namespace Editor
 
             if (!isAllGroupSceneUnloaded && !isAllGroupSceneLoaded)
             {
-                loadGroupAdditiveButton.AddToClassList("highlight-button");
-                loadGroupSingleButton.AddToClassList("highlight-button");
+                loadGroupAdditiveButton.AddToClassList(EditorStyles.HIGHLIGHT_BUTTON);
+                loadGroupSingleButton.AddToClassList(EditorStyles.HIGHLIGHT_BUTTON);
             }
             else
             {
-                loadGroupAdditiveButton.RemoveFromClassList("highlight-button");
-                loadGroupSingleButton.RemoveFromClassList("highlight-button");
+                loadGroupAdditiveButton.RemoveFromClassList(EditorStyles.HIGHLIGHT_BUTTON);
+                loadGroupSingleButton.RemoveFromClassList(EditorStyles.HIGHLIGHT_BUTTON);
             }
         }
         
@@ -350,6 +339,24 @@ namespace Editor
             EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo();
             List<string> sceneNames = (from sceneAsset in sceneGroup.SceneAssets where sceneAsset != null select sceneAsset.name).ToList();
             _sceneLoader.UnloadMultipleScenes(sceneNames);
+        }
+        
+        private void DrawSignature()
+        {
+            VisualElement signature = new();
+            Label prefixLabel = new() { text = "by" };
+            Image icon = new();
+            Label postfixLabel = new() { text = "Kyoto" };
+            
+            signature.AddToClassList(EditorStyles.SIGNATURE);
+            prefixLabel.AddToClassList(EditorStyles.SIGNATURE_LABEL);
+            postfixLabel.AddToClassList(EditorStyles.SIGNATURE_LABEL);
+            icon.AddToClassList(EditorStyles.SIGNATURE_ICON);
+            
+            signature.Add(prefixLabel);
+            signature.Add(icon);
+            signature.Add(postfixLabel);
+            rootVisualElement.Add(signature);
         }
         
         private void OnDestroy()
